@@ -6,5 +6,5 @@ return [
     'para' => 'gddigital.contato@gmail.com',
     // Remetente: precisa ser um e-mail do SEU domínio, criado na Hostinger
     // (ex.: contato@seudominio.com.br). Evita cair no spam.
-    'de'   => 'contato@seudominio.com.br',
+    'de'   => 'contato@gddigital.com.br',
 ];
