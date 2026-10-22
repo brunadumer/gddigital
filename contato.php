@@ -98,12 +98,12 @@ function enviar_smtp($cfg, $assunto, $corpo, $nome, $email) {
     return $fim;
 }
 
-if (!empty($cfg['smtp_senha'])) {
-    $enviado = enviar_smtp($cfg, $assunto, $corpo, $nome, $email);
-} else {
-    $enviado = mail($cfg['para'], $assunto, $corpo, $cab, '-f' . $cfg['de']);
+if (empty($cfg['smtp_senha']) || $cfg['smtp_senha'] === 'COLOQUE_A_SENHA_DO_EMAIL_AQUI') {
+    error_log('contato.php: smtp_senha ausente no config.php');
+    responder(false, 'Envio não configurado no servidor.', 500);
 }
-if (!$enviado) {
+if (!enviar_smtp($cfg, $assunto, $corpo, $nome, $email)) {
+    error_log('contato.php: SMTP recusou o envio (login, senha ou servidor)');
     responder(false, 'Falha ao enviar.', 500);
 }
 
