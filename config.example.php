@@ -9,4 +9,6 @@ return [
     'de'   => 'contato@gddigital.com.br',
     // Senha do e-mail 'de' (a mesma do Webmail). Faz o envio chegar de verdade.
     'smtp_senha' => 'COLOQUE_A_SENHA_DO_EMAIL_AQUI',
+    // Só para diagnosticar: true habilita /contato.php?teste=1. Depois volte para false.
+    'debug' => false,
 ];
