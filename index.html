@@ -141,9 +141,9 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding-block:30px 48px;
 
 <header>
   <div class="wrap nav">
-    <a class="logo" href="#topo" aria-label="GD Digital"><i>GD</i>GD <span>Digital</span></a>
+    <a class="logo" href="#topo" aria-label="GD Digital"><i>GD</i><span>Digital</span></a>
     <nav aria-label="Principal">
-      <a href="#servicos">/serviços</a><a href="#entregas">/projetos</a><a href="#processo">/processo</a><a href="#faq">/dúvidas</a>
+      <a href="#servicos">serviços</a><a href="#entregas">projetos</a><a href="#processo">processo</a><a href="#faq">dúvidas</a>
     </nav>
     <a class="btn sm" href="#contato">Fale conosco</a>
   </div>
@@ -235,7 +235,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding-block:30px 48px;
       <details><summary>Atendem empresas pequenas?</summary><p>Sim. Montamos o projeto no tamanho do seu momento e deixamos espaço para crescer, começando pelo que dá retorno mais rápido.</p></details>
       <details><summary>O agente de IA substitui minha equipe?</summary><p>Ele assume as tarefas repetitivas, como responder perguntas comuns, qualificar e agendar. Casos delicados são encaminhados para uma pessoa com todo o histórico.</p></details>
       <details><summary>O sistema e o site ficam sendo meus?</summary><p>Sim. Você tem acesso ao código, aos dados e às contas, sem ficar preso a nós.</p></details>
-      <details><summary>Posso contratar só uma das frentes?</summary><p>Pode. Marketing, software e IA funcionam separados, e ficam ainda melhores juntos.</p></details>
+      <details><summary>Posso contratar só uma das frentes?</summary><p>Pode. Marketing, software e IA funcionam separados, mas ficam ainda melhores juntos.</p></details>
     </div>
   </section>
 
@@ -255,15 +255,16 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding-block:30px 48px;
           <label for="nome">Nome<input id="nome" required autocomplete="name"></label>
           <label for="empresa">Empresa<input id="empresa" autocomplete="organization"></label>
         </div>
+        <label for="email">Seu e-mail<input id="email" type="email" required autocomplete="email"></label>
+        <input id="site" name="site" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <label for="interesse">Interesse
           <select id="interesse"><option>Marketing digital</option><option>Sistema ou site</option><option>Agente de IA</option><option>Mais de uma frente</option></select>
         </label>
         <label for="msg">Como podemos ajudar?<textarea id="msg" required placeholder="Ex.: quero automatizar o atendimento do WhatsApp da minha clínica."></textarea></label>
-        <button class="btn" type="submit">Preparar mensagem →</button>
-        <div class="out" id="out" role="status">
-          <span>Mensagem pronta. Copie e envie para a GD Digital:</span>
-          <pre id="pre"></pre>
-          <div class="cta" style="margin:0"><button type="button" class="btn sm" id="copy">Copiar mensagem</button><a class="btn sm ghost" id="walink" target="_blank" rel="noopener" hidden>Abrir WhatsApp</a></div>
+        <button class="btn" type="submit" id="send">Enviar mensagem →</button>
+        <div class="out" id="out" role="status" aria-live="polite">
+          <span id="outmsg"></span>
+          <div class="cta" style="margin:0"><a class="btn sm ghost" id="walink" target="_blank" rel="noopener" hidden>Falar pelo WhatsApp</a></div>
         </div>
       </form>
     </div>
@@ -273,8 +274,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding-block:30px 48px;
 </main>
 
 <script>
-// Dados de contato: preencha antes de divulgar. WhatsApp só com dígitos, ex.: 5511999999999
-var CONTATO = { email: 'contato@gddigital.com.br', whatsapp: '' };
+var CONTATO = { email: 'gddigital.contato@gmail.com', whatsapp: '5541997038747' };
 
 document.getElementById('yr').textContent = new Date().getFullYear();
 document.getElementById('mail').textContent = CONTATO.email;
@@ -307,22 +307,41 @@ else {
   })();
 }
 
-var form = document.getElementById('form'), out = document.getElementById('out'), pre = document.getElementById('pre');
+var form = document.getElementById('form'), out = document.getElementById('out'),
+    outmsg = document.getElementById('outmsg'), send = document.getElementById('send'),
+    wa = document.getElementById('walink');
+function show(text, ok) {
+  outmsg.textContent = text; out.classList.add('show');
+  out.style.borderColor = ok ? '' : 'var(--accent)';
+  out.style.background = ok ? '' : 'var(--accent-soft)';
+}
 form.addEventListener('submit', function (e) {
   e.preventDefault();
-  var nome = document.getElementById('nome'), msg = document.getElementById('msg');
-  if (!nome.value.trim() || !msg.value.trim()) { (nome.value.trim() ? msg : nome).focus(); return; }
-  var emp = document.getElementById('empresa').value.trim();
-  var txt = 'Olá, GD Digital! Sou ' + nome.value.trim() + (emp ? ' (' + emp + ')' : '') +
-    '.\nInteresse: ' + document.getElementById('interesse').value + '.\n' + msg.value.trim();
-  pre.textContent = txt; out.classList.add('show');
-  var a = document.getElementById('walink');
-  if (CONTATO.whatsapp) { a.href = 'https://wa.me/' + CONTATO.whatsapp + '?text=' + encodeURIComponent(txt); a.hidden = false; }
-});
-document.getElementById('copy').addEventListener('click', function () {
-  var b = this, ok = function () { b.textContent = 'Copiado!'; setTimeout(function () { b.textContent = 'Copiar mensagem'; }, 1800); };
-  if (navigator.clipboard) navigator.clipboard.writeText(pre.textContent).then(ok, function () {
-    var r = document.createRange(); r.selectNodeContents(pre); var s = getSelection(); s.removeAllRanges(); s.addRange(r);
-  });
+  var f = {
+    nome: document.getElementById('nome').value.trim(),
+    empresa: document.getElementById('empresa').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    interesse: document.getElementById('interesse').value,
+    mensagem: document.getElementById('msg').value.trim(),
+    site: document.getElementById('site').value
+  };
+  var bad = !f.nome ? 'nome' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? 'email' : !f.mensagem ? 'msg' : '';
+  if (bad) { document.getElementById(bad).focus(); show('Preencha nome, e-mail válido e mensagem.', false); return; }
+  send.disabled = true; send.textContent = 'Enviando…';
+  fetch('contato.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(f) })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.ok, j: j }; }); })
+    .then(function (res) {
+      if (!res.ok) throw new Error((res.j && res.j.erro) || 'falha');
+      show('Mensagem enviada! Retornamos em breve no e-mail ' + f.email + '.', true);
+      wa.hidden = true; form.reset();
+    })
+    .catch(function (err) {
+      show((err.message && err.message !== 'falha' ? err.message + ' ' : '') + 'Não foi possível enviar agora. Tente de novo ou fale pelo WhatsApp.', false);
+      if (CONTATO.whatsapp) {
+        var txt = 'Olá, GD Digital! Sou ' + f.nome + (f.empresa ? ' (' + f.empresa + ')' : '') + '.\nInteresse: ' + f.interesse + '.\n' + f.mensagem;
+        wa.href = 'https://wa.me/' + CONTATO.whatsapp + '?text=' + encodeURIComponent(txt); wa.hidden = false;
+      }
+    })
+    .then(function () { send.disabled = false; send.textContent = 'Enviar mensagem →'; });
 });
 </script>
