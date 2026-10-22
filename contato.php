@@ -56,7 +56,54 @@ $cab  = "From: GD Digital <{$cfg['de']}>\r\n";
 $cab .= "Reply-To: $nome <$email>\r\n";
 $cab .= "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\n";
 
-if (!mail($cfg['para'], $assunto, $corpo, $cab, '-f' . $cfg['de'])) {
+// Envio por SMTP autenticado (confiável). Sem senha configurada, usa mail().
+function enviar_smtp($cfg, $assunto, $corpo, $nome, $email) {
+    $host = $cfg['smtp_host'] ?? 'smtp.hostinger.com';
+    $porta = (int) ($cfg['smtp_porta'] ?? 465);
+    $s = @stream_socket_client("ssl://$host:$porta", $en, $es, 15);
+    if (!$s) return false;
+    stream_set_timeout($s, 15);
+    $ler = function () use ($s) {
+        $r = '';
+        while (($l = fgets($s, 515)) !== false) { $r .= $l; if (strlen($l) < 4 || $l[3] === ' ') break; }
+        return $r;
+    };
+    $cmd = function ($c, $ok) use ($s, $ler) {
+        if ($c !== null) fwrite($s, $c . "\r\n");
+        $r = $ler();
+        return strpos($r, (string) $ok) === 0;
+    };
+    $dominio = substr(strrchr($cfg['de'], '@'), 1);
+    $okk = $cmd(null, 220)
+        && $cmd('EHLO ' . $dominio, 250)
+        && $cmd('AUTH LOGIN', 334)
+        && $cmd(base64_encode($cfg['smtp_usuario'] ?? $cfg['de']), 334)
+        && $cmd(base64_encode($cfg['smtp_senha']), 235)
+        && $cmd('MAIL FROM:<' . $cfg['de'] . '>', 250)
+        && $cmd('RCPT TO:<' . $cfg['para'] . '>', 250)
+        && $cmd('DATA', 354);
+    if (!$okk) { fclose($s); return false; }
+    $msg  = 'From: =?UTF-8?B?' . base64_encode('GD Digital') . '?= <' . $cfg['de'] . ">\r\n";
+    $msg .= 'To: <' . $cfg['para'] . ">\r\n";
+    $msg .= 'Reply-To: =?UTF-8?B?' . base64_encode($nome) . '?= <' . $email . ">\r\n";
+    $msg .= 'Subject: ' . $assunto . "\r\n";
+    $msg .= 'Date: ' . date('r') . "\r\n";
+    $msg .= 'Message-ID: <' . bin2hex(random_bytes(8)) . '@' . $dominio . ">\r\n";
+    $msg .= "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
+    $msg .= chunk_split(base64_encode($corpo));
+    fwrite($s, $msg . "\r\n.\r\n");
+    $fim = strpos($ler(), '250') === 0;
+    fwrite($s, "QUIT\r\n");
+    fclose($s);
+    return $fim;
+}
+
+if (!empty($cfg['smtp_senha'])) {
+    $enviado = enviar_smtp($cfg, $assunto, $corpo, $nome, $email);
+} else {
+    $enviado = mail($cfg['para'], $assunto, $corpo, $cab, '-f' . $cfg['de']);
+}
+if (!$enviado) {
     responder(false, 'Falha ao enviar.', 500);
 }
 

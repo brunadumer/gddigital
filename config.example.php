@@ -7,4 +7,6 @@ return [
     // Remetente: precisa ser um e-mail do SEU domínio, criado na Hostinger
     // (ex.: contato@seudominio.com.br). Evita cair no spam.
     'de'   => 'contato@gddigital.com.br',
+    // Senha do e-mail 'de' (a mesma do Webmail). Faz o envio chegar de verdade.
+    'smtp_senha' => 'COLOQUE_A_SENHA_DO_EMAIL_AQUI',
 ];
