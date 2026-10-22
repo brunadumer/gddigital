@@ -19,7 +19,10 @@ $dados = json_decode(file_get_contents('php://input'), true);
 if (!is_array($dados)) responder(false, 'Dados inválidos.', 400);
 
 // Campo-isca: robôs preenchem, pessoas não. Finge sucesso e descarta.
-if (!empty($dados['site'])) responder(true);
+if (!empty($dados['armadilha'])) {
+    error_log('contato.php: mensagem descartada pelo campo-isca');
+    responder(true);
+}
 
 // Limita 5 envios por hora por IP.
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'x';

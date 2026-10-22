@@ -263,7 +263,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding-block:30px 48px;
           <label for="empresa">Empresa<input id="empresa" autocomplete="organization"></label>
         </div>
         <label for="email">Seu e-mail<input id="email" type="email" required autocomplete="email"></label>
-        <input id="site" name="site" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+        <input id="armadilha" name="armadilha" type="text" tabindex="-1" autocomplete="off" data-lpignore="true" data-1p-ignore aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <label for="interesse">Interesse
           <select id="interesse"><option>Marketing digital</option><option>Sistema ou site</option><option>Agente de IA</option><option>Mais de uma frente</option></select>
         </label>
@@ -330,7 +330,7 @@ form.addEventListener('submit', function (e) {
     email: document.getElementById('email').value.trim(),
     interesse: document.getElementById('interesse').value,
     mensagem: document.getElementById('msg').value.trim(),
-    site: document.getElementById('site').value
+    armadilha: document.getElementById('armadilha').value
   };
   var bad = !f.nome ? 'nome' : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email) ? 'email' : !f.mensagem ? 'msg' : '';
   if (bad) { document.getElementById(bad).focus(); show('Preencha nome, e-mail válido e mensagem.', false); return; }
